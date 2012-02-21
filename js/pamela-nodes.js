@@ -17,27 +17,27 @@
     along with Pamela.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 // Class color generator 
 
 function ColorGenerator() {
-  this.colors = [
-    [255,   0,   0],
-    [255, 255,   0],
-    [  0, 255,   0],
-    [  0, 255, 255],
-    [  0,   0, 255],
-    [255,   0, 255]
-  ]; 
-  this.colorGeneratorValue = 0;
 }
 
-ColorGenerator.prototype.generate = function() {
-  this.colorGeneratorValue += 1;
-  if (this.colorGeneratorValue >= this.colors.length)
-    this.colorGeneratorValue = 0;
-  var c = this.colors[this.colorGeneratorValue];
-  return [c[0], c[1], c[2]];
+ColorGenerator.prototype.generate = function(newnode) {
+  this.node = newnode;
+  this.color = [];
+
+  if( this.node.name.indexOf("HSL") >= 0 ) {
+    return [249,155,12];
+  } else if( this.node.name.match(/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/i) ) {
+    return [88,88,88];
+  } else {
+    var md5 = hex_md5(this.node.name);
+ 
+    this.color[0] = parseInt(md5.substring(0,2), 16);	
+    this.color[1] = parseInt(md5.substring(2,4), 16);
+    this.color[2] = parseInt(md5.substring(4,6), 16);
+    return [255-this.color[0],255-this.color[1],255-this.color[2]];
+  }
 };
 
 var colorGenerator = new ColorGenerator();
@@ -50,7 +50,9 @@ function Node(name) {
   this.setMode("newNode");
   
   var size = Math.min(width, height);
-  this.color = colorGenerator.generate();
+
+  this.color = colorGenerator.generate(this);
+
   this.position = new Vector(
     (Math.random() * size) - (size / 2), 
     (Math.random() * size) - (size / 2), 
