@@ -25,3 +25,6 @@ define("DATA_TTL", "300");
 // Url of the scanner script to download when the user clicks the download button.
 define("PAM_SCANNER_LINK", "scanner/pamela-scanner.sh");
 
+// Title of the page
+define("PAM_TITLE", "Pamela");
+
