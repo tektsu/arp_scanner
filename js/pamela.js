@@ -94,6 +94,10 @@ Pamela.prototype.updateNodes = function(entities) {
   for (var i = 0; i < entities.length; i++) {
     if (entities[i] == null)
       continue;
+
+    if(entities[i].match(/^\./))
+      continue;
+    
     this.nodes.push(new Node(entities[i]));
   }
 };

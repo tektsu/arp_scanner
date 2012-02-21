@@ -26,11 +26,11 @@ PAM_CRON="/etc/cron.d/pamela"
 PAM_SCRIPT="${PAM_DIR}/$(basename $0)"
 REGISTER=''
 SIMULATE=''
-IF='eth0'
-OUT='http://yourserver.com/pamela/upload.php'
+IF='p2p1'
+OUT='http://yourserver.com/upload.php'
 USER=''
 PASSWORD=''
-TRANSLATE=''
+TRANSLATE='/var/www/html/mac_log.csv'
 POST=''
 TIMEOUT=200
 
@@ -136,13 +136,6 @@ function translate {
   then
     return 0
   fi
- 
-  # translate denotes a url
-  # save the output of the url to a file and use it as a file
-  TRANSLATE_URL=${TRANSLATE}
-  TRANSLATE=$(mktemp)
-
-  wget --timeout="${TIMEOUT}" --no-check-certificate --quiet -O "${TRANSLATE}" "${TRANSLATE_URL}"
 
   POST=$(echo ${POST} | awk -v names="${TRANSLATE}" 'BEGIN { 
     RS="\n"
@@ -151,20 +144,20 @@ function translate {
       split(nl, n); 
       nms[n[1]] = n[2]
     }
+
     close(names)
     RS=","
     first=1
     while ((getline i)> 0) {
       sub(/\n$/,"",i)
-      #print "input:", i, "translates to", (i in nms?nms[i]:i)
+      # if (i in nms){ print "input:", i, "translates to", nms[i] }
       if (!first) 
         printf(",")
       printf (i in nms?nms[i]:i)
       first=0
     }
-  }')
 
-  rm ${TRANSLATE}
+  }')
 }
 
 function upload {
