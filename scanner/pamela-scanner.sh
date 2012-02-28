@@ -137,6 +137,23 @@ function translate {
     return 0
   fi
 
+  # First we use user-submitted names
+  # Pull these from our website where people submit them (it's on a different machine from the scanner)
+  wget http://acemonstertoys.org/pamela/mac_log.csv -O $TRANSLATE.web
+
+  # Then we fall back to names obtained via zeroconf (aka avahi, aka bonjour)
+  avahi-browse -a -t|grep :.*:.*:.*:|sed -e 's/.*IPv. \(.*\) \[\(.*\)].*/\2,\1[\2]/g' > $TRANSLATE.bon
+
+  # Finally we fall back to the name from arp-scan (maker of the network chipset)
+  # Yes I know we already ran arp-scan once...I'm too lazy to do it right
+  # And yes I'm using regex instead of learning how awk works.
+  arp-scan -I eth0 -R --localnet|sed -e 's/\(.*\)\t\(.*\)\t\(.*\)/\2,\3[\2]/g'|grep :.*:.*:> $TRANSLATE.arp
+
+  # Combine names from 3 sources to one
+  # Note that the code below uses the last name to appear in the file
+  # So order them accordingly
+  cat $TRANSLATE.arp $TRANSLATE.bon $TRANSLATE.web > $TRANSLATE
+
   POST=$(echo ${POST} | awk -v names="${TRANSLATE}" 'BEGIN { 
     RS="\n"
     FS=","
