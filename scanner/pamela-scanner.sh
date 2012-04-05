@@ -137,9 +137,8 @@ function translate {
     return 0
   fi
 
-  # First we use user-submitted names
-  # Pull these from our website where people submit them (it's on a different machine from the scanner)
-  wget http://acemonstertoys.org/pamela/mac_log.csv -O $TRANSLATE.web
+  # clean old translations
+  rm $TRANSLATE.complete
 
   # Then we fall back to names obtained via zeroconf (aka avahi, aka bonjour)
   avahi-browse -a -t|grep :.*:.*:.*:|sed -e 's/.*IPv. \(.*\) \[\(.*\)].*/\2,\1[\2]/g' > $TRANSLATE.bon
@@ -152,9 +151,9 @@ function translate {
   # Combine names from 3 sources to one
   # Note that the code below uses the last name to appear in the file
   # So order them accordingly
-  cat $TRANSLATE.arp $TRANSLATE.bon $TRANSLATE.web > $TRANSLATE
+  cat $TRANSLATE.bon $TRANSLATE.arp $TRANSLATE >> $TRANSLATE.complete
 
-  POST=$(echo ${POST} | awk -v names="${TRANSLATE}" 'BEGIN { 
+  POST=$(echo ${POST} | awk -v names="${TRANSLATE}.complete" 'BEGIN { 
     RS="\n"
     FS=","
     while ((getline nl < names) > 0) { 
@@ -200,4 +199,6 @@ check_if_arpscan_installed
 scan
 translate
 upload
+
+git commit mac_log.csv -m "Save updates user database"
 
