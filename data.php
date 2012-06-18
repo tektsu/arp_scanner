@@ -45,3 +45,5 @@ if (count($data) > 0) {
  echo('[]');
 } 
 data_purge();
+
+ // echo('["offline until 1337 goons go home"]') ?>
