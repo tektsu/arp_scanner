@@ -22,6 +22,7 @@ header("Content-type: application/javascript");
 header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");  
 header("Cache-Control: no-cache");  
 header("Pragma: no-cache");   
+header("Access-Control-Allow-Origin: *");
 
 require_once("config.php");
 require_once("lib/data.php");
@@ -39,8 +40,9 @@ function multiply() {
 
 $data = data_get();
 if (count($data) > 0) {
+$data_chomped = array_unique($data);
 //multiply();
- echo('["'.implode('", "', $data).'"]');
+ echo('["'.implode('", "', $data_chomped).'"]');
 } else {
  echo('[]');
 } 
