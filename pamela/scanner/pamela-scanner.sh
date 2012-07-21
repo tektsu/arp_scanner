@@ -26,11 +26,11 @@ PAM_CRON="/etc/cron.d/pamela"
 PAM_SCRIPT="${PAM_DIR}/$(basename $0)"
 REGISTER=''
 SIMULATE=''
-IF='eth0'
-OUT='http://yourserver.com/pamela/upload.php'
+IF='p2p1'
+OUT='http://yourserver.com/upload.php'
 USER=''
 PASSWORD=''
-TRANSLATE=''
+TRANSLATE='/var/www/html/mac_log.csv'
 POST=''
 TIMEOUT=200
 
@@ -136,35 +136,45 @@ function translate {
   then
     return 0
   fi
- 
-  # translate denotes a url
-  # save the output of the url to a file and use it as a file
-  TRANSLATE_URL=${TRANSLATE}
-  TRANSLATE=$(mktemp)
 
-  wget --timeout="${TIMEOUT}" --no-check-certificate --quiet -O "${TRANSLATE}" "${TRANSLATE_URL}"
+  # clean old translations
+  rm $TRANSLATE.complete
 
-  POST=$(echo ${POST} | awk -v names="${TRANSLATE}" 'BEGIN { 
+  # Then we fall back to names obtained via zeroconf (aka avahi, aka bonjour)
+  #avahi-browse -a -t|grep :.*:.*:.*:|sed -e 's/.*IPv. \(.*\) \[\(.*\)].*/\2,\1[\2]/g' > $TRANSLATE.bon
+
+  # Finally we fall back to the name from arp-scan (maker of the network chipset)
+  # Yes I know we already ran arp-scan once...I'm too lazy to do it right
+  # And yes I'm using regex instead of learning how awk works.
+  #arp-scan -I eth0 -R --localnet|sed -e 's/\(.*\)\t\(.*\)\t\(.*\)/\2,\3[\2]/g'|grep :.*:.*:> $TRANSLATE.arp
+
+  # Combine names from 3 sources to one
+  # Note that the code below uses the last name to appear in the file
+  # So order them accordingly
+  #cat $TRANSLATE.bon $TRANSLATE.arp 
+  cat $TRANSLATE >> $TRANSLATE.complete
+
+  POST=$(echo ${POST} | awk -v names="${TRANSLATE}.complete" 'BEGIN { 
     RS="\n"
     FS=","
     while ((getline nl < names) > 0) { 
       split(nl, n); 
       nms[n[1]] = n[2]
     }
+
     close(names)
     RS=","
     first=1
     while ((getline i)> 0) {
       sub(/\n$/,"",i)
-      #print "input:", i, "translates to", (i in nms?nms[i]:i)
+      # if (i in nms){ print "input:", i, "translates to", nms[i] }
       if (!first) 
         printf(",")
       printf (i in nms?nms[i]:i)
       first=0
     }
-  }')
 
-  rm ${TRANSLATE}
+  }')
 }
 
 function upload {
@@ -190,4 +200,6 @@ check_if_arpscan_installed
 scan
 translate
 upload
+
+git commit mac_log.csv -m "Save updates user database"
 
