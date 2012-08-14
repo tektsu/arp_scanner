@@ -23,7 +23,7 @@ $message = "";
 
 
   function csv_filter($value) {
-    return preg_replace('/[^a-z0-9: ]/i','',$value);
+    return preg_replace('/[^a-z0-9: {}]/i','',$value);
   }
 
   function is_mac($mac) {
