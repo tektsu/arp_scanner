@@ -201,5 +201,3 @@ scan
 translate
 upload
 
-git commit mac_log.csv -m "Save updates user database"
-

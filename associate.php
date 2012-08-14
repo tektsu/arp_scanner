@@ -23,7 +23,7 @@ $message = "";
 
 
   function csv_filter($value) {
-    return preg_replace('/[^a-z0-9:]/i','',$value);
+    return preg_replace('/[^a-z0-9: ]/i','',$value);
   }
 
   function is_mac($mac) {
@@ -63,7 +63,7 @@ include('header-inc.php');
         <table>
           <tr><td><label for="name">Your Name:</label></td><td><input type="text" id="name" name="name" /></td></tr>
           <tr><td><label for="macaddress">MAC Address:</label></td><td><input type="text" id="macaddress" name="macaddress" value="<?php echo arp_lookup($_SERVER['REMOTE_ADDR']); ?>" />
-            <span id="autodetect"><?php if($arp_found) { echo "(Autodetected MAC from IP address ".$_SERVER['REMOTE_ADDR'].")"; } ?></span>
+            <span id="autodetect"><?php if($arp_found) { echo "(Autodetected your MAC from IP address ".$_SERVER['REMOTE_ADDR'].")"; } ?></span>
           </td></tr>
         </table>
         <input type="submit" id="submit" name="submit" value="Register" />
