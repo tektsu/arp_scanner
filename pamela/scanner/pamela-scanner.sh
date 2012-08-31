@@ -141,17 +141,18 @@ function translate {
   rm $TRANSLATE.complete
 
   # Then we fall back to names obtained via zeroconf (aka avahi, aka bonjour)
-  avahi-browse -a -t|grep :.*:.*:.*:|sed -e 's/.*IPv. \(.*\) \[\(.*\)].*/\2,\1[\2]/g' > $TRANSLATE.bon
+  #avahi-browse -a -t|grep :.*:.*:.*:|sed -e 's/.*IPv. \(.*\) \[\(.*\)].*/\2,\1[\2]/g' > $TRANSLATE.bon
 
   # Finally we fall back to the name from arp-scan (maker of the network chipset)
   # Yes I know we already ran arp-scan once...I'm too lazy to do it right
   # And yes I'm using regex instead of learning how awk works.
-  arp-scan -I eth0 -R --localnet|sed -e 's/\(.*\)\t\(.*\)\t\(.*\)/\2,\3[\2]/g'|grep :.*:.*:> $TRANSLATE.arp
+  #arp-scan -I eth0 -R --localnet|sed -e 's/\(.*\)\t\(.*\)\t\(.*\)/\2,\3[\2]/g'|grep :.*:.*:> $TRANSLATE.arp
 
   # Combine names from 3 sources to one
   # Note that the code below uses the last name to appear in the file
   # So order them accordingly
-  cat $TRANSLATE.bon $TRANSLATE.arp $TRANSLATE >> $TRANSLATE.complete
+  #cat $TRANSLATE.bon $TRANSLATE.arp 
+  cat $TRANSLATE >> $TRANSLATE.complete
 
   POST=$(echo ${POST} | awk -v names="${TRANSLATE}.complete" 'BEGIN { 
     RS="\n"

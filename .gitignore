@@ -3,3 +3,5 @@ design
 db
 config.php
 scanner/pamela.log
+mac_log.csv
+mac_log.csv.complete
