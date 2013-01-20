@@ -27,7 +27,7 @@ ActiveRecord::Base::establish_connection(
 	:host     => "ad7wy.org",
 	:database => "ad7wy_hslpamela",
 	:username => "ad7wy_hsl",
-	:password => "password")
+	:password => "*,a5@qQg@#c!")
 
 class Mac < ActiveRecord::Base
 end
@@ -54,9 +54,7 @@ Mac.find(:all).each { |entry|
 	ip = entry.ip
 	if macs.has_key?(mac)
 		if ! entry.active || ! entry.since
-			if options[:verbose]
-				puts "Activating #{mac} at #{ip}"
-			end
+			puts "Activating #{mac} at #{ip}" if options[:verbose]
 			entry.since = Time.now
 			Log.new(:mac => mac, :ip => ip, :action => "activate").save
 		end
@@ -70,9 +68,7 @@ Mac.find(:all).each { |entry|
 
 	# Entry is no longer current
 	if entry.active
-		if options[:verbose]
-			puts "Deactivating #{mac}"
-		end
+		puts "Deactivating #{mac}"if options[:verbose]
 		entry.active = 0
 		entry.save
 		Log.new(:mac => mac, :ip => ip, :action => "deactivate").save
@@ -81,9 +77,7 @@ Mac.find(:all).each { |entry|
 
 # Add entries for any macs not already in the db
 macs.each { |mac, ip|
-	if options[:verbose]
-		puts "Activating  new entry #{mac} at #{ip}"
-	end
+	puts "Activating  new entry #{mac} at #{ip}" if options[:verbose]
 	Mac.new(:mac => mac, :ip => ip, :active => 1, :since => Time.now, :refreshed => Time.now).save
 	Log.new(:mac => mac, :ip => ip, :action => "activate").save
 }
