@@ -1,9 +1,22 @@
 #!/usr/bin/env ruby
 
-require "rubygems"
 require "active_record"
+require "optparse"
+require "rubygems"
 
-IF = 'en1' # Set to interface on the scanning box
+# Command line arguments
+options = {};
+OptionParser.new { |opts|
+	opts.banner = "Usage: pamela-scanner.rb --interface=en0"
+
+	options[:interface] = "en0"
+	opts.on("i", "--interface=interface", "Network Interface") { |interface|
+		options[:interface] = interface
+	}
+
+}.parse!
+
+puts sprintf("arp-scan -R --interface=%s --localnet", options[:interface])
 
 # Open the database
 ActiveRecord::Base::establish_connection(
@@ -21,7 +34,7 @@ end
 
 # Scan the network for mac addresses
 macs = {};
-IO.popen(sprintf("arp-scan -R --interface=%s --localnet", IF)) { |stdin|
+IO.popen(sprintf("arp-scan -R --interface=%s --localnet", options[:interface])) { |stdin|
 	stdin.each { |line| 
 		next if line !~ /^([\d\.]+)\s+([[:xdigit:]:]+)\s/;
 		macs[$2] = $1;
