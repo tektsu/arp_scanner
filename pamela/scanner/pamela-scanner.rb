@@ -9,14 +9,17 @@ options = {};
 OptionParser.new { |opts|
 	opts.banner = "Usage: pamela-scanner.rb --interface=en0"
 
+	options[:verbose] = false
+	opts.on("v", "--verbose", "Run verbosely") { |verbose|
+		options[:verbose] = verbose
+	}
+
 	options[:interface] = "en0"
 	opts.on("i", "--interface=interface", "Network Interface") { |interface|
 		options[:interface] = interface
 	}
 
 }.parse!
-
-puts sprintf("arp-scan -R --interface=%s --localnet", options[:interface])
 
 # Open the database
 ActiveRecord::Base::establish_connection(
@@ -34,7 +37,11 @@ end
 
 # Scan the network for mac addresses
 macs = {};
-IO.popen(sprintf("arp-scan -R --interface=%s --localnet", options[:interface])) { |stdin|
+command = sprintf("arp-scan -R --interface=%s --localnet", options[:interface])
+if options[:verbose]
+	puts "Running [#{command}]"
+end
+IO.popen(command) { |stdin|
 	stdin.each { |line| 
 		next if line !~ /^([\d\.]+)\s+([[:xdigit:]:]+)\s/;
 		macs[$2] = $1;
@@ -47,6 +54,9 @@ Mac.find(:all).each { |entry|
 	ip = entry.ip
 	if macs.has_key?(mac)
 		if ! entry.active || ! entry.since
+			if options[:verbose]
+				puts "Activating #{mac} at #{ip}"
+			end
 			entry.since = Time.now
 			Log.new(:mac => mac, :ip => ip, :action => "activate").save
 		end
@@ -59,13 +69,21 @@ Mac.find(:all).each { |entry|
 	end
 
 	# Entry is no longer current
-	entry.active = 0
-	entry.save
-	Log.new(:mac => mac, :ip => ip, :action => "deactivate").save
+	if entry.active
+		if options[:verbose]
+			puts "Deactivating #{mac}"
+		end
+		entry.active = 0
+		entry.save
+		Log.new(:mac => mac, :ip => ip, :action => "deactivate").save
+	end
 }
 
 # Add entries for any macs not already in the db
 macs.each { |mac, ip|
+	if options[:verbose]
+		puts "Activating  new entry #{mac} at #{ip}"
+	end
 	Mac.new(:mac => mac, :ip => ip, :active => 1, :since => Time.now, :refreshed => Time.now).save
 	Log.new(:mac => mac, :ip => ip, :action => "activate").save
 }
