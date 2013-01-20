@@ -27,7 +27,7 @@ ActiveRecord::Base::establish_connection(
 	:host     => "ad7wy.org",
 	:database => "ad7wy_hslpamela",
 	:username => "ad7wy_hsl",
-	:password => "*,a5@qQg@#c!")
+	:password => "password")
 
 class Mac < ActiveRecord::Base
 end
@@ -68,7 +68,7 @@ Mac.find(:all).each { |entry|
 
 	# Entry is no longer current
 	if entry.active
-		puts "Deactivating #{mac}"if options[:verbose]
+		puts "Deactivating #{mac}" if options[:verbose]
 		entry.active = 0
 		entry.save
 		Log.new(:mac => mac, :ip => ip, :action => "deactivate").save
