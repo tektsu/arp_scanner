@@ -19,6 +19,11 @@ OptionParser.new { |opts|
 		options[:interface] = interface
 	}
 
+	options[:max_age] = 20
+	opts.on("a", "--max-age=minutes", "Minutes to keep expired macs active") { |max_age|
+		options[:max_age] = max_age.to_i
+	}
+
 }.parse!
 
 # Open the database
@@ -68,7 +73,9 @@ Mac.find(:all).each { |entry|
 
 	# Entry is no longer current
 	if entry.active
-		puts "Deactivating #{mac}" if options[:verbose]
+		ageMinutes = ((Time.now - entry.refreshed)/60).to_i
+		next if ageMinutes < options[:max_age]
+		puts "Deactivating #{mac}, #{ageMinutes} minutes old" if options[:verbose]
 		entry.active = 0
 		entry.save
 		Log.new(:mac => mac, :ip => ip, :action => "deactivate").save
@@ -77,7 +84,7 @@ Mac.find(:all).each { |entry|
 
 # Add entries for any macs not already in the db
 macs.each { |mac, ip|
-	puts "Activating  new entry #{mac} at #{ip}" if options[:verbose]
+	puts "Activating new entry #{mac} at #{ip}" if options[:verbose]
 	Mac.new(:mac => mac, :ip => ip, :active => 1, :since => Time.now, :refreshed => Time.now).save
 	Log.new(:mac => mac, :ip => ip, :action => "activate").save
 }
