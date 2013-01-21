@@ -24,15 +24,35 @@ OptionParser.new { |opts|
 		options[:max_age] = max_age.to_i
 	}
 
+	options[:db_host] = "configure_me"
+	opts.on("r", "--db-host=host", "Database Host") { |host|
+		options[:db_host] = host
+	}
+
+	options[:db_name] = "configure_me"
+	opts.on("n", "--db-name=name", "Database Name") { |name|
+		options[:db_name] = name
+	}
+
+	options[:db_user] = "configure_me"
+	opts.on("u", "--db-user=user", "Database User") { |user|
+		options[:db_user] = user
+	}
+
+	options[:db_password] = "configure_me"
+	opts.on("p", "--db-password=password", "Database Password") { |password|
+		options[:db_password] = password
+	}
+
 }.parse!
 
 # Open the database
 ActiveRecord::Base::establish_connection(
 	:adapter  => "mysql2",
-	:host     => "ad7wy.org",
-	:database => "ad7wy_hslpamela",
-	:username => "ad7wy_hsl",
-	:password => "password")
+	:host     => options[:db_host],
+	:database => options[:db_name],
+	:username => options[:db_user],
+	:password => options[:db_password])
 
 class Mac < ActiveRecord::Base
 end
