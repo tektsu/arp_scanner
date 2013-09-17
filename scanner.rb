@@ -67,7 +67,7 @@ if options[:verbose]
 	puts "Running [#{command}]"
 end
 IO.popen(command) { |stdin|
-	stdin.each { |line| 
+	stdin.each { |line|
 		next if line !~ /^([\d\.]+)\s+([[:xdigit:]:]+)\s/;
 		macs[$2] = $1;
 	}
